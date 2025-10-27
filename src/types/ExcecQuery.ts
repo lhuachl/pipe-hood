@@ -1,0 +1,1 @@
+export type ExcecQuery = (sql : string , params ?: unknown[] ) => Promise < any [] > ;
