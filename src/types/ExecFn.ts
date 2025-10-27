@@ -1,0 +1,1 @@
+export type ExecFn<T = any> = (sql: string, params: unknown[], opts?: { name?: string; signal?: AbortSignal }) => Promise<T[]>;

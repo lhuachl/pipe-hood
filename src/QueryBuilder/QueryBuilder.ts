@@ -1,53 +1,136 @@
-import { ExcecQuery } from "../types/ExcecQuery.js";
-import { SQLFragment } from "../types/sqlFragment.js";
+import { ICompiler, IExecutor, QueryState } from '../types/index.js';
 
-class QueryBuilder
-{
-    private _table = '';
-    private _columns: string[] = [];
-    private _where: Record<string, any> = {};
-    private _limit?: number;
-    private _groupBy: string[] = [];
-    private _orderBy: { column: string; direction: 'asc' | 'desc' }[] = [];
-    private _offset?: number;
-    private _joins: { table: string; condition: string; type: 'inner' | 'left' | 'right' }[] = [];
-    constructor() {}   
-    table(tableName: string): this {
-        this._table = tableName;
-        return this;
-        
+/**
+ * QueryBuilder desacoplado con inyección de dependencias
+ * - Responsabilidad única: orquestar estado
+ * - ICompiler: compila estado a SQL
+ * - IExecutor: ejecuta SQL en la BD
+ * - Mutabilidad: cada método modifica el estado y retorna this
+ */
+export class QueryBuilder {
+  private _state: QueryState = {
+    table: '',
+    selects: [],
+    where: [],
+    orderBy: [],
+  };
+
+  constructor(
+    private compiler: ICompiler,
+    private executor: IExecutor
+  ) {}
+
+  /**
+   * Define la tabla principal
+   */
+  table(name: string): this {
+    this._state.table = name;
+    return this;
+  }
+
+  /**
+   * Define columnas a seleccionar. Si no se especifica, usa *
+   */
+  select(...cols: string[]): this {
+    if (cols.length) this._state.selects.push(...cols);
+    return this;
+  }
+
+  /**
+   * WHERE con igualdad simple
+   */
+  whereEq(field: string, value: unknown): this {
+    this._state.where.push({ text: `${field} = ?`, params: [value] });
+    return this;
+  }
+
+  /**
+   * WHERE con texto SQL plano y parámetros
+   */
+  whereRaw(text: string, ...params: unknown[]): this {
+    this._state.where.push({ text, params });
+    return this;
+  }
+
+  /**
+   * WHERE con IN
+   */
+  whereIn(field: string, values: unknown[]): this {
+    if (!values.length) {
+      this._state.where.push({ text: 'FALSE', params: [] });
+      return this;
     }
-    select(...columns: string[]): this {
-        this._columns.push(...columns);
-        return this;}
-    whereEq(field: string, value: unknown) {
-    this._where.push({ text: `${field} = ?`, params: [value] });
+    const placeholders = values.map(() => '?').join(', ');
+    this._state.where.push({
+      text: `${field} IN (${placeholders})`,
+      params: [...values],
+    });
     return this;
   }
 
-  // raw SQL fragment via template or manual construction (useful for IN, complex cond)
-  whereRaw(text: string, ...params: unknown[]) {
-    this._where.push({ text, params });
-    return this;
-  }
+  /**
+   * ORDER BY
+   */
   orderBy(column: string, direction: 'asc' | 'desc' = 'asc'): this {
-    this._orderBy.push({ column, direction });
+    this._state.orderBy.push({ column, direction });
     return this;
   }
-  groupBy(...columns: string[]): this {
-    this._groupBy.push(...columns);
+
+  /**
+   * LIMIT
+   */
+  limit(n: number): this {
+    this._state.limit = n;
     return this;
   }
-  limit(count: number): this {
-    this._limit = count;
+
+  /**
+   * OFFSET
+   */
+  offset(n: number): this {
+    this._state.offset = n;
     return this;
   }
-  offset(count: number): this {
-    this._offset = count;
-    return this;
+
+  /**
+   * Compila el query builder a SQL con parámetros (PostgreSQL style: $1, $2, etc)
+   */
+  compile(): { sql: string; params: unknown[] } {
+    return this.compiler.compile(this._state);
   }
-  Join(table: string, condition: string, type: 'inner' | 'left' | 'right' = 'inner'): this {
-    this._joins.push({ table, condition, type });
-    return this;
+
+  /**
+   * Ejecuta la consulta usando el executor inyectado
+   */
+  async execute<T = any>(): Promise<T[]> {
+    const { sql, params } = this.compile();
+    return this.executor.execute<T>(sql, params);
+  }
+
+  /**
+   * Devuelve el SQL sin ejecutar
+   */
+  toSQL(): string {
+    const { sql } = this.compile();
+    return sql;
+  }
+
+  /**
+   * Clona el builder para evitar mutaciones compartidas
+   */
+  clone(): QueryBuilder {
+    const cloned = new QueryBuilder(this.compiler, this.executor);
+    cloned._state = {
+      table: this._state.table,
+      selects: [...this._state.selects],
+      where: this._state.where.map((f) => ({
+        text: f.text,
+        params: [...f.params],
+      })),
+      orderBy: this._state.orderBy.map((o) => ({ ...o })),
+      limit: this._state.limit,
+      offset: this._state.offset,
+    };
+    return cloned;
   }
 }
