@@ -1,6 +1,6 @@
 {
   "name": "pipehood",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Minimal, lightweight ORM for PostgreSQL with dependency injection, fluent API, and TypeScript support",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
