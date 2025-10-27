@@ -13,6 +13,7 @@ export class QueryBuilder {
     selects: [],
     where: [],
     orderBy: [],
+    type: 'SELECT',
   };
 
   constructor(
@@ -130,7 +131,36 @@ export class QueryBuilder {
       orderBy: this._state.orderBy.map((o) => ({ ...o })),
       limit: this._state.limit,
       offset: this._state.offset,
+      type: this._state.type,
+      insertValues: this._state.insertValues ? { ...this._state.insertValues } : undefined,
+      updateValues: this._state.updateValues ? { ...this._state.updateValues } : undefined,
     };
     return cloned;
+  }
+
+  /**
+   * INSERT - Define los valores a insertar
+   */
+  insert(values: Record<string, unknown>): this {
+    this._state.type = 'INSERT';
+    this._state.insertValues = values;
+    return this;
+  }
+
+  /**
+   * UPDATE - Define los valores a actualizar
+   */
+  update(values: Record<string, unknown>): this {
+    this._state.type = 'UPDATE';
+    this._state.updateValues = values;
+    return this;
+  }
+
+  /**
+   * DELETE - Marca el query como DELETE
+   */
+  delete(): this {
+    this._state.type = 'DELETE';
+    return this;
   }
 }

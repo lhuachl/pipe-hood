@@ -136,6 +136,34 @@ const [result1, result2] = await Promise.all([
 ]);
 ```
 
+### CRUD Operations
+
+Complete Create, Read, Update, Delete support:
+
+```typescript
+// CREATE (INSERT)
+const newUser = await factory.create()
+  .table('usuarios')
+  .insert({ nombre: 'Juan', email: 'juan@example.com', activo: true })
+  .execute();
+
+// READ (SELECT) - covered above
+
+// UPDATE
+const updated = await factory.create()
+  .table('usuarios')
+  .update({ nombre: 'María', activo: false })
+  .whereEq('id', 1)
+  .execute();
+
+// DELETE (requires WHERE for safety)
+const deleted = await factory.create()
+  .table('usuarios')
+  .whereEq('id', 1)
+  .delete()
+  .execute();
+```
+
 ## API Reference
 
 ### QueryBuilder Methods
@@ -204,6 +232,27 @@ Create an independent copy of the query builder.
 
 ```typescript
 const query2 = query1.clone().limit(5)
+```
+
+#### `insert(values: Record<string, unknown>): this`
+Insert a new record. Returns the query builder for chaining.
+
+```typescript
+qb.insert({ nombre: 'Juan', email: 'juan@example.com', activo: true })
+```
+
+#### `update(values: Record<string, unknown>): this`
+Update records. Must be combined with `where()`.
+
+```typescript
+qb.update({ nombre: 'María', activo: false }).whereEq('id', 1)
+```
+
+#### `delete(): this`
+Delete records. Requires `where()` clause for safety.
+
+```typescript
+qb.whereEq('id', 1).delete()
 ```
 
 #### `execute(): Promise<T[]>`

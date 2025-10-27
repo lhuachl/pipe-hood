@@ -1,6 +1,6 @@
 {
   "name": "pipehood",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Minimal, lightweight ORM for PostgreSQL with dependency injection, fluent API, and TypeScript support",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -20,6 +20,7 @@
     "example:real": "tsx examples/04-real-tables.ts",
     "example:complete": "tsx examples/05-complete-system.ts",
     "example:async": "tsx examples/06-async-parallelism.ts",
+    "example:crud": "tsx examples/07-crud-operations.ts",
     "verify": "tsx test/verify-connection.ts",
     "prepublishOnly": "npm run build"
   },
