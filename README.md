@@ -1,4 +1,4 @@
-# own-orm
+# pipehood
 
 > Minimal, lightweight ORM for PostgreSQL with dependency injection, fluent API, and TypeScript support.
 
@@ -17,7 +17,7 @@ A production-ready query builder designed with SOLID principles: clean architect
 ## Installation
 
 ```bash
-npm install own-orm
+npm install pipehood
 ```
 
 ## Quick Start
@@ -357,9 +357,9 @@ MIT © 2024 Joshua Villegas
 
 ## Support
 
-- 📖 [Full Documentation](https://github.com/joshuavillegas/own-orm)
-- 🐛 [Report Issues](https://github.com/joshuavillegas/own-orm/issues)
-- 💬 [Discussions](https://github.com/joshuavillegas/own-orm/discussions)
+- 📖 [Full Documentation](https://github.com/lhuachl/pipe-hood)
+- 🐛 [Report Issues](https://github.com/lhuachl/pipe-hood/issues)
+- 💬 [Discussions](https://github.com/lhuachl/pipe-hood/discussions)
 
 ## Changelog
 

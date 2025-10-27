@@ -3,7 +3,8 @@ src/
 examples/
 test/
 *.ts
-!*.d.ts
+!dist/**/*.ts
+!dist/**/*.d.ts
 
 # Configuration files
 tsconfig.json
@@ -26,8 +27,9 @@ node_modules/
 
 # Build artifacts (keep only dist/)
 .turbo/
-dist-old/
 
-# Documentation
+# Documentation (keep only in repo)
 ARCHITECTURE.md
 CONTRIBUTING.md
+
+
